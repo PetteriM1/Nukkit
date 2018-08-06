@@ -1164,7 +1164,7 @@ public class Server {
 
     // TODO: Fix title tick
     public void titleTick() {
-        if (!Nukkit.ANSI) {
+        if (!Nukkit.ANSI || !Nukkit.TITLE) {
             return;
         }
 
@@ -2099,6 +2099,7 @@ public class Server {
         BlockEntity.registerBlockEntity(BlockEntity.HOPPER, BlockEntityHopper.class);
         BlockEntity.registerBlockEntity(BlockEntity.BED, BlockEntityBed.class);
         BlockEntity.registerBlockEntity(BlockEntity.JUKEBOX, BlockEntityJukebox.class);
+        BlockEntity.registerBlockEntity(BlockEntity.SHULKER_BOX, BlockEntityShulkerBox.class);
     }
 
     public static Server getInstance() {

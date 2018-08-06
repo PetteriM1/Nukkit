@@ -85,7 +85,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * author: MagicDroidX & Box
+ * @author MagicDroidX &amp; Box
  * Nukkit Project
  */
 public class Player extends EntityHuman implements CommandSender, InventoryHolder, ChunkLoader, IPlayer {
@@ -279,6 +279,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * This might disappear in the future.
      * Please use getUniqueId() instead (IP + clientId + name combo, in the future it'll change to real UUID for online auth)
+     * @return random client id
      */
     @Deprecated
     public Long getClientId() {
@@ -1029,6 +1030,8 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
      * 0 is true
      * -1 is false
      * other is identifer
+     * @param packet packet to send
+     * @return packet successfully sent
      */
     public boolean dataPacket(DataPacket packet) {
         return this.dataPacket(packet, false) != -1;
@@ -1060,6 +1063,8 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
      * 0 is true
      * -1 is false
      * other is identifer
+     * @param packet packet to send
+     * @return packet successfully sent
      */
     public boolean directDataPacket(DataPacket packet) {
         return this.directDataPacket(packet, false) != -1;
@@ -1541,7 +1546,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                         if (this.inAirTicks == 3 && swimming == 0) {
                             jump = 0.7;
                         }
-                        this.getFoodData().updateFoodExpLevel(0.1 * distance + jump + swimming);
+                        this.getFoodData().updateFoodExpLevel(0.06 * distance + jump + swimming);
                     } else {
                         if (this.inAirTicks == 3 && swimming == 0) {
                             jump = 0.2;
@@ -1674,13 +1679,19 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                         double expectedVelocity = (-this.getGravity()) / ((double) this.getDrag()) - ((-this.getGravity()) / ((double) this.getDrag())) * Math.exp(-((double) this.getDrag()) * ((double) (this.inAirTicks - this.startAirTicks)));
                         double diff = (this.speed.y - expectedVelocity) * (this.speed.y - expectedVelocity);
 
-                        if (!this.hasEffect(Effect.JUMP) && diff > 0.6 && expectedVelocity < this.speed.y) {
+                        Block block = level.getBlock(this);
+                        boolean onLadder = block.getId() == BlockID.LADDER;
+
+                        if (!this.hasEffect(Effect.JUMP) && diff > 0.6 && expectedVelocity < this.speed.y && !onLadder) {
                             if (this.inAirTicks < 100) {
                                 //this.sendSettings();
                                 this.setMotion(new Vector3(0, expectedVelocity, 0));
                             } else if (this.kick(PlayerKickEvent.Reason.FLYING_DISABLED, "Flying is not enabled on this server")) {
                                 return false;
                             }
+                        }
+                        if (onLadder) {
+                            this.resetFallDistance();
                         }
                     }
 
@@ -3170,6 +3181,8 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * Sends a chat message as this player. If the message begins with a / (forward-slash) it will be treated
      * as a command.
+     * @param message message to send
+     * @return successful
      */
     public boolean chat(String message) {
         if (!this.spawned || !this.isAlive()) {
@@ -3180,7 +3193,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         this.craftingType = CRAFTING_SMALL;
 
         if (this.removeFormat) {
-            message = TextFormat.clean(message);
+            message = TextFormat.clean(message, true);
         }
 
         for (String msg : message.split("\n")) {
@@ -3735,7 +3748,8 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
 
         //this is a dirty hack to prevent dying in a different level than the respawn point from breaking everything
         if (this.level != pos.level)   {
-            this.teleportImmediate(new Location(0, -100, 0, pos.level));
+            this.teleport(new Location(pos.x, -100, pos.z, pos.level), null);
+            this.teleport(new Location(pos.x, pos.y, pos.z, pos.level), null);
         }
 
         this.dataPacket(pk);
@@ -3920,6 +3934,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * Drops an item on the ground in front of the player. Returns if the item drop was successful.
      *
+     * @param item to drop
      * @return bool if the item was dropped or if the item was null
      */
     public boolean dropItem(Item item) {
@@ -4147,6 +4162,9 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * Shows a new FormWindow to the player
      * You can find out FormWindow result by listening to PlayerFormRespondedEvent
+     *
+     * @param window to show
+     * @return form id to use in {@link PlayerFormRespondedEvent}
      */
     public int showFormWindow(FormWindow window) {
         return showFormWindow(window, this.formWindowCount++);
@@ -4155,6 +4173,10 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * Shows a new FormWindow to the player
      * You can find out FormWindow result by listening to PlayerFormRespondedEvent
+     *
+     * @param window to show
+     * @param id form id
+     * @return form id to use in {@link PlayerFormRespondedEvent}
      */
     public int showFormWindow(FormWindow window, int id) {
         ModalFormRequestPacket packet = new ModalFormRequestPacket();
@@ -4169,6 +4191,9 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * Shows a new setting page in game settings
      * You can find out settings result by listening to PlayerFormRespondedEvent
+     *
+     * @param window to show on settings page
+     * @return form id to use in {@link PlayerFormRespondedEvent}
      */
     public int addServerSettings(FormWindow window) {
         int id = this.formWindowCount++;
@@ -4560,7 +4585,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     }
 
     public boolean pickupEntity(Entity entity, boolean near) {
-        if (!this.spawned || !this.isAlive() || !this.isOnline() || this.getGamemode() == SPECTATOR) {
+        if (!this.spawned || !this.isAlive() || !this.isOnline() || this.getGamemode() == SPECTATOR || entity.isClosed()) {
             return false;
         }
 
@@ -4670,7 +4695,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
     /**
      * Notifies an ACK response from the client
      *
-     * @param identification
+     * @param identification packet identity
      */
     public void notifyACK(int identification) {
         needACK.put(identification, Boolean.TRUE);

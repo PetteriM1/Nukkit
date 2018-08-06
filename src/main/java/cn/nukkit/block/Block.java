@@ -265,9 +265,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
             list[RED_NETHER_BRICK] = BlockBricksRedNether.class; //215
             list[BONE_BLOCK] = BlockBone.class; //216
 
-            list[BONE_BLOCK] = BlockBone.class; //216
-
-            //TODO: list[SHULKER_BOX] = BlockShulkerBox.class; //218
+            list[SHULKER_BOX] = BlockShulkerBox.class; //218
             list[PURPLE_GLAZED_TERRACOTTA] = BlockTerracottaGlazedPurple.class; //219
             list[WHITE_GLAZED_TERRACOTTA] = BlockTerracottaGlazedWhite.class; //220
             list[ORANGE_GLAZED_TERRACOTTA] = BlockTerracottaGlazedOrange.class; //221
@@ -513,7 +511,7 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
 
     /**
      * The full id is a combination of the id and data.
-     * @return
+     * @return full id
      */
     public int getFullId() {
         return (getId() << 4);
@@ -638,6 +636,8 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
 
     /**
      * @deprecated This function is lack of Player class and is not accurate enough, use #getBreakTime(Item, Player)
+     * @param item item used
+     * @return break time
      */
     @Deprecated
     public double getBreakTime(Item item) {
@@ -971,5 +971,9 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
 
     public Item toItem() {
         return new ItemBlock(this, this.getDamage(), 1);
+    }
+
+    public boolean canSilkTouch() {
+        return false;
     }
 }
