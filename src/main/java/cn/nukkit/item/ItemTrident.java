@@ -86,9 +86,9 @@ public class ItemTrident extends ItemTool {
                         // idk why but trident returns to inventory without this
                         new NukkitRunnable() {
                             public void run() {
-                                player.getInventory().removeItem(Item.get(Item.TRIDENT, 0, 1));
+                                player.getInventory().removeItem(player.getInventory().getItemInHand());
                             }
-                        }.runTaskLater(null, 2);
+                        }.runTaskLater(null, 1);
                     }
                 }
             }
