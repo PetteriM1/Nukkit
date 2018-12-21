@@ -1,5 +1,6 @@
 package cn.nukkit.block;
 
+import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.utils.Rail;
@@ -42,7 +43,7 @@ public class BlockRailPowered extends BlockRail {
         if (type == Level.BLOCK_UPDATE_NORMAL || type == Level.BLOCK_UPDATE_REDSTONE || type == Level.BLOCK_UPDATE_SCHEDULED) {
             super.onUpdate(type);
             boolean wasPowered = isActive();
-            boolean isPowered = level.isBlockPowered(this)
+            boolean isPowered = level.isBlockPowered(this.getLocation())
                     || checkSurrounding(this, true, 0)
                     || checkSurrounding(this, false, 0);
 
@@ -179,4 +180,10 @@ public class BlockRailPowered extends BlockRail {
                 && (level.isBlockPowered(pos) || checkSurrounding(pos, relative, power + 1));
     }
 
+    @Override
+    public Item[] getDrops(Item item) {
+        return new Item[]{
+                Item.get(Item.POWERED_RAIL, 0, 1)
+        };
+    }
 }

@@ -91,7 +91,7 @@ public class BlockTNT extends BlockSolid {
 
     @Override
     public int onUpdate(int type) {
-        if ((type == Level.BLOCK_UPDATE_NORMAL || type == Level.BLOCK_UPDATE_REDSTONE) && this.level.isBlockPowered(this)) {
+        if ((type == Level.BLOCK_UPDATE_NORMAL || type == Level.BLOCK_UPDATE_REDSTONE) && this.level.isBlockPowered(this.getLocation())) {
             this.prime();
         }
 
@@ -102,6 +102,12 @@ public class BlockTNT extends BlockSolid {
     public boolean onActivate(Item item, Player player) {
         if (item.getId() == Item.FLINT_STEEL) {
             item.useOn(this);
+            this.prime(80, player);
+            return true;
+        }
+        if (item.getId() == Item.FIRE_CHARGE) {
+            if (!player.isCreative()) player.getInventory().removeItem(Item.get(Item.FIRE_CHARGE, 0, 1));
+            this.level.addSound(player, Sound.MOB_GHAST_FIREBALL);
             this.prime(80, player);
             return true;
         }

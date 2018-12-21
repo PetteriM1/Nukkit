@@ -7,19 +7,16 @@ import cn.nukkit.level.generator.populator.type.Populator;
 import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.NukkitRandom;
 
-import static cn.nukkit.block.BlockID.GLOWSTONE;
-import static cn.nukkit.block.BlockID.NETHERRACK;
-
 public class PopulatorGlowStone extends Populator {
     @Override
     public void populate(ChunkManager level, int chunkX, int chunkZ, NukkitRandom random, FullChunk chunk) {
         int x = NukkitMath.randomRange(random, chunkX << 4, (chunkX << 4) + 15);
         int z = NukkitMath.randomRange(random, chunkZ << 4, (chunkZ << 4) + 15);
         int y = this.getHighestWorkableBlock(chunk, x & 0xF, z & 0xF);
-        if (!(y == -1 && level.getBlockIdAt(x, y, z) == NETHERRACK)) {
+        if (y != -1 && level.getBlockIdAt(x, y, z) != NETHERRACK) {
             int count = NukkitMath.randomRange(random, 40, 60);
             for (int i = 0; i < count; i++) {
-                level.setBlockFullIdAt(x + (random.nextBoundedInt(7) - 3), y + (random.nextBoundedInt(9) - 4), z + (random.nextBoundedInt(7) - 3), GLOWSTONE << 4);
+                level.setBlockAt(x + (random.nextBoundedInt(7) - 3), y + (random.nextBoundedInt(9) - 4), z + (random.nextBoundedInt(7) - 3), GLOWSTONE);
             }
         }
     }

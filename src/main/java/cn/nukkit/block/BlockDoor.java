@@ -218,7 +218,7 @@ public abstract class BlockDoor extends BlockTransparentMeta {
         }
 
         if (type == Level.BLOCK_UPDATE_REDSTONE) {
-            if ((!isOpen() && this.level.isBlockPowered(this)) || (isOpen() && !this.level.isBlockPowered(this))) {
+            if ((!isOpen() && this.level.isBlockPowered(this.getLocation())) || (isOpen() && !this.level.isBlockPowered(this.getLocation()))) {
                 this.level.getServer().getPluginManager().callEvent(new BlockRedstoneEvent(this, isOpen() ? 15 : 0, isOpen() ? 0 : 15));
 
                 this.toggle(null);
@@ -229,12 +229,8 @@ public abstract class BlockDoor extends BlockTransparentMeta {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz) {
-        return this.place(item, block, target, face, fx, fy, fz, null);
-    }
-
-    @Override
     public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+        if (this.y > 254) return false;
         if (face == BlockFace.UP) {
             Block blockUp = this.up();
             Block blockDown = this.down();
@@ -255,7 +251,7 @@ public abstract class BlockDoor extends BlockTransparentMeta {
             this.getLevel().setBlock(block, this, true, true); //Bottom
             this.getLevel().setBlock(blockUp, Block.get(this.getId(), metaUp), true); //Top
 
-            if (!this.isOpen() && this.level.isBlockPowered(this)) {
+            if (!this.isOpen() && this.level.isBlockPowered(this.getLocation())) {
                 this.toggle(null);
             }
             return true;

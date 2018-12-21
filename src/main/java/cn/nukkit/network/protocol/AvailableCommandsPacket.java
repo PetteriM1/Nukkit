@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 public class AvailableCommandsPacket extends DataPacket {
 
     public static final byte NETWORK_ID = ProtocolInfo.AVAILABLE_COMMANDS_PACKET;
-    public Map<String, CommandDataVersions> commands;
 
     public static final int ARG_FLAG_VALID = 0x100000;
 
@@ -33,6 +32,9 @@ public class AvailableCommandsPacket extends DataPacket {
 
     public static final int ARG_FLAG_ENUM = 0x200000;
     public static final int ARG_FLAG_POSTFIX = 0x1000000;
+
+    public Map<String, CommandDataVersions> commands;
+    public final Map<String, List<String>> softEnums = new HashMap<>();
 
     @Override
     public byte pid() {
@@ -242,8 +244,7 @@ public class AvailableCommandsPacket extends DataPacket {
                             throw new IllegalStateException("Postfix '" + parameter.postFix + "' isn't in postfix array");
                         }
 
-
-                        type = (ARG_FLAG_VALID | parameter.type.getId()) << 24 | i;
+                        type = (parameter.type.getId() << 24) | i | ARG_FLAG_VALID;
                     } else {
                         type = parameter.type.getId() | ARG_FLAG_VALID;
                     }
@@ -252,6 +253,14 @@ public class AvailableCommandsPacket extends DataPacket {
                     putBoolean(parameter.optional);
                 }
             }
+        });
+
+        this.putUnsignedVarInt(softEnums.size());
+
+        softEnums.forEach((name, values) -> {
+            this.putString(name);
+            this.putUnsignedVarInt(values.size());
+            values.forEach(this::putString);
         });
     }
 }

@@ -1,6 +1,9 @@
 package cn.nukkit.entity.item;
 
+import cn.nukkit.Player;
 import cn.nukkit.block.BlockChest;
+import cn.nukkit.entity.Entity;
+import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemMinecartChest;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -16,7 +19,7 @@ public class EntityMinecartChest extends EntityMinecartAbstract {
 
     public EntityMinecartChest(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
-        super.setDisplayBlock(new BlockChest());
+        super.setDisplayBlock(new BlockChest(), false);
     }
 
     // TODO: 2016/1/30 inventory
@@ -24,6 +27,11 @@ public class EntityMinecartChest extends EntityMinecartAbstract {
     @Override
     public MinecartType getType() {
         return MinecartType.valueOf(1);
+    }
+
+    @Override
+    public boolean isRideable(){
+        return false;
     }
 
     @Override
@@ -36,5 +44,18 @@ public class EntityMinecartChest extends EntityMinecartAbstract {
         level.dropItem(this, new ItemMinecartChest());
     }
 
+    @Override
+    protected void activate(int x, int y, int z, boolean flag) {
 
+    }
+
+    @Override
+    public boolean mountEntity(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean onInteract(Player p, Item item) {
+        return false;
+    }
 }

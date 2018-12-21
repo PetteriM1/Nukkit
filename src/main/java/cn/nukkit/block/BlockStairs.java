@@ -20,18 +20,13 @@ public abstract class BlockStairs extends BlockTransparentMeta {
     @Override
     public double getMinY() {
         // TODO: this seems wrong
-        return this.y + (getDamage() & 0x04) > 0 ? 0.5 : 0;
+        return this.y + ((getDamage() & 0x04) > 0 ? 0.5 : 0);
     }
 
     @Override
     public double getMaxY() {
         // TODO: this seems wrong
-        return this.y + (getDamage() & 0x04) > 0 ? 1 : 0.5;
-    }
-
-    @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz) {
-        return this.place(item, block, target, face, fx, fy, fz, null);
+        return this.y + ((getDamage() & 0x04) > 0 ? 1 : 0.5);
     }
 
     @Override

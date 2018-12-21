@@ -20,8 +20,6 @@ public class AddPlayerPacket extends DataPacket {
 
     public UUID uuid;
     public String username;
-    public String thirdPartyName = "";
-    private int platformId = 0;
     public long entityUniqueId;
     public long entityRuntimeId;
     public String platformChatId = "";
@@ -35,6 +33,8 @@ public class AddPlayerPacket extends DataPacket {
     public float yaw;
     public Item item;
     public EntityMetadata metadata = new EntityMetadata();
+    //public EntityLink links = new EntityLink[0];
+    public String deviceId = "";
 
     @Override
     public void decode() {
@@ -46,8 +46,6 @@ public class AddPlayerPacket extends DataPacket {
         this.reset();
         this.putUUID(this.uuid);
         this.putString(this.username);
-        this.putString(this.thirdPartyName);
-        this.putVarInt(this.platformId);
         this.putEntityUniqueId(this.entityUniqueId);
         this.putEntityRuntimeId(this.entityRuntimeId);
         this.putString(this.platformChatId);
@@ -57,7 +55,14 @@ public class AddPlayerPacket extends DataPacket {
         this.putLFloat(this.yaw); //TODO headrot
         this.putLFloat(this.yaw);
         this.putSlot(this.item);
-
         this.put(Binary.writeMetadata(this.metadata));
+        this.putUnsignedVarInt(0); //TODO: Adventure settings
+        this.putUnsignedVarInt(0);
+        this.putUnsignedVarInt(0);
+        this.putUnsignedVarInt(0);
+        this.putUnsignedVarInt(0);
+        this.putLLong(entityUniqueId);
+        this.putUnsignedVarInt(0); //TODO: Entity links
+        this.putString(deviceId);
     }
 }

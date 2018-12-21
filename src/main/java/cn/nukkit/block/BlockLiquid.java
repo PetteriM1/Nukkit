@@ -3,6 +3,7 @@ package cn.nukkit.block;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.block.BlockFromToEvent;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemBlock;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
 import cn.nukkit.level.particle.SmokeParticle;
@@ -227,6 +228,7 @@ public abstract class BlockLiquid extends BlockTransparentMeta {
                         to = getBlock(decay);
                     }
                     BlockFromToEvent event = new BlockFromToEvent(this, to);
+                    level.getServer().getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
                         this.level.setBlock(this, to, true, true);
                         if (!decayed) {
@@ -274,6 +276,7 @@ public abstract class BlockLiquid extends BlockTransparentMeta {
             }
             Block to = getBlock(newFlowDecay);
             BlockFromToEvent event = new BlockFromToEvent(block, to);
+            level.getServer().getPluginManager().callEvent(event);
             if (!event.isCancelled()) {
                 this.level.setBlock(block, getBlock(newFlowDecay), true, true);
                 this.level.scheduleUpdate(block, this.tickRate());
@@ -434,5 +437,10 @@ public abstract class BlockLiquid extends BlockTransparentMeta {
 
     protected boolean canFlowInto(Block block) {
         return block.canBeFlowedInto() && !(block instanceof BlockLiquid && block.getDamage() == 0);
+    }
+
+    @Override
+    public Item toItem() {
+        return new ItemBlock(new BlockAir());
     }
 }
