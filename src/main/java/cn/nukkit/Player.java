@@ -792,12 +792,12 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
             int count = 0;
             ObjectIterator<Long2ObjectMap.Entry<Boolean>> iter = loadQueue.long2ObjectEntrySet().fastIterator();
             while (iter.hasNext()) {
-                Long2ObjectMap.Entry<Boolean> entry = iter.next();
-                long index = entry.getLongKey();
-
                 if (count >= this.chunksPerTick) {
                     break;
                 }
+
+                Long2ObjectMap.Entry<Boolean> entry = iter.next();
+                long index = entry.getLongKey();
                 int chunkX = Level.getHashX(index);
                 int chunkZ = Level.getHashZ(index);
 
