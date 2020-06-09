@@ -164,7 +164,7 @@ public class Level implements ChunkManager, Metadatable {
 
     private final Long2LongMap unloadQueue = Long2LongMaps.synchronize(new Long2LongOpenHashMap());
 
-    private float time;
+    private int time;
     public boolean stopTime;
 
     public float skyLightSubtracted;
@@ -308,7 +308,7 @@ public class Level implements ChunkManager, Metadatable {
         }
 
         this.folderName = name;
-        this.time = this.provider.getTime();
+        this.time = (int) this.provider.getTime();
 
         this.raining = this.provider.isRaining();
         this.rainTime = this.provider.getRainTime();
@@ -730,7 +730,7 @@ public class Level implements ChunkManager, Metadatable {
 
     public void sendTime(Player... players) {
         SetTimePacket pk = new SetTimePacket();
-        pk.time = (int) this.time;
+        pk.time = this.time;
 
         Server.broadcastPacket(players, pk);
     }
@@ -1190,7 +1190,7 @@ public class Level implements ChunkManager, Metadatable {
 
         this.server.getPluginManager().callEvent(new LevelSaveEvent(this));
 
-        this.provider.setTime((int) this.time);
+        this.provider.setTime(this.time);
         this.provider.setRaining(this.raining);
         this.provider.setRainTime(this.rainTime);
         this.provider.setThundering(this.thundering);
@@ -2923,7 +2923,7 @@ public class Level implements ChunkManager, Metadatable {
     }
 
     public int getTime() {
-        return (int) time;
+        return time;
     }
 
     public boolean isDaytime() {
