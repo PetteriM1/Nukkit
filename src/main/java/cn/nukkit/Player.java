@@ -3857,7 +3857,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                 case LAVA:
                     Block block = this.level.getBlock(new Vector3(this.x, this.y - 1, this.z));
                     if (block.getId() == Block.MAGMA) {
-                        message = "death.attack.lava.magma";
+                        message = "death.attack.magma";
                         break;
                     }
                     message = "death.attack.lava";
