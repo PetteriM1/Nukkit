@@ -1,5 +1,6 @@
 package cn.nukkit.entity.item;
 
+import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.projectile.EntityProjectile;
 import cn.nukkit.event.potion.PotionCollideEvent;
@@ -129,8 +130,11 @@ public class EntityPotion extends EntityProjectile {
         this.getLevel().addParticle(particle);
         this.getLevel().addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_GLASS);
 
-        Entity[] entities = this.getLevel().getNearbyEntities(this.getBoundingBox().grow(4.125, 2.125, 4.125));
+        Entity[] entities = this.getLevel().getNearbyEntities(this.getBoundingBox().grow(4.125, 2.125, 4.125), this);
         for (Entity anEntity : entities) {
+            if (anEntity instanceof Player && ((Player) anEntity).isSpectator()) {
+                continue;
+            }
             double distance = anEntity.distanceSquared(this);
             if (distance < 16) {
                 double d = anEntity.equals(collidedWith) ? 1 : 1 - Math.sqrt(distance) / 4;
