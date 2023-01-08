@@ -25,7 +25,7 @@ public class Nether extends Generator {
      */
     private NukkitRandom nukkitRandom;
     private Random random;
-    private double lavaHeight = 32;
+    private double lavaHeight = 31;
     private double bedrockDepth = 5;
     private SimplexF[] noiseGen = new SimplexF[3];
     private final List<Populator> populators = new ArrayList<>();
