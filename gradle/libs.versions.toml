@@ -5,8 +5,8 @@ jline = "3.30.6"
 fastutilmaps = "8.5.15-SNAPSHOT"
 
 [libraries]
-nethernet = { group = "org.cloudburstmc.netty", name = "netty-transport-nethernet", version = "2.0.0.CR6-20261026.130552-16" }
-libdatachannel = { group = "dev.opencollab", name = "libdatachannel-java-arch-detect", version = "0.24.6.0-20261023.142230-9" }
+nethernet = { group = "org.cloudburstmc.netty", name = "netty-transport-nethernet", version = "2.0.0.CR6-20261030.131938-23" }
+libdatachannel = { group = "dev.opencollab", name = "libdatachannel-java-arch-detect", version = "0.24.6.0-20261029.091642-10" }
 bcpkix = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version = "1.85" }
 bcprov = { group = "org.bouncycastle", name = "bcprov-jdk18on", version = "1.85.2" }
 epoll = { group = "io.netty", name = "netty-transport-native-epoll", version = "4.1.139.Final" }

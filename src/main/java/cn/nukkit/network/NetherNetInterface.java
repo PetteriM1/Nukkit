@@ -6,12 +6,14 @@ import cn.nukkit.event.player.PlayerCreationEvent;
 import cn.nukkit.event.server.QueryRegenerateEvent;
 import cn.nukkit.network.protocol.DataPacket;
 import cn.nukkit.network.protocol.ProtocolInfo;
-import cn.nukkit.network.session.NetworkPlayerSession;
 import cn.nukkit.network.session.NetherNetPlayerSession;
+import cn.nukkit.network.session.NetworkPlayerSession;
 import com.google.common.base.Strings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.internal.PlatformDependent;
 import lombok.Getter;
@@ -24,24 +26,15 @@ import org.cloudburstmc.netty.channel.nethernet.signaling.NetherNetHTTPServerSig
 import org.cloudburstmc.netty.channel.nethernet.signaling.PongData;
 import org.cloudburstmc.netty.util.nethernet.NetherNetLogging;
 import org.cloudburstmc.netty.util.nethernet.OperatorIdentity;
-import org.jose4j.lang.JoseException;
 import tel.schich.libdatachannel.LibDataChannelArchDetect;
 import tel.schich.libdatachannel.PeerConnectionConfiguration;
 
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-import javax.security.auth.x500.X500Principal;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -74,20 +67,11 @@ public class NetherNetInterface implements AdvancedSourceInterface {
             String advertisedAddressesString = server.getPropertyString("advertised-addresses", "");
             Set<String> advertisedAddresses = advertisedAddressesString.isBlank() ? null : new HashSet<>(Arrays.asList(advertisedAddressesString.split(",")));
 
-            OperatorIdentity identity;
-            File identityFile = new File("nethernet-identity.p12");
-            if (!identityFile.exists()) {
-                server.getLogger().warning("Persistent nethernet-identity.p12 does not exist. New identity will be generated on every startup.");
-                identity = OperatorIdentity.generate("Nukkit");
-            } else {
-                identity = fromKeystore(identityFile, server.getPropertyString("nethernet-identity-password", "nethernet"));
-            }
-
             NetherNetHTTPServerSignaling.Builder signallingBuilder = new NetherNetHTTPServerSignaling.Builder()
                     .setIceOnLocalPort(false)
                     .setMaxConnectionsPerAddress(server.getPropertyInt("connections-per-address", 8))
                     .setAdvertisedAddresses(advertisedAddresses)
-                    .setIdentity(identity)
+                    .setIdentity(OperatorIdentity.fromPemOrCreate(new File("identity.pem"), "Nukkit"))
                     .setMotdProvider((host, address, client) -> {
                         QueryRegenerateEvent info = this.server.getQueryInformation();
 
@@ -100,6 +84,12 @@ public class NetherNetInterface implements AdvancedSourceInterface {
                                 .setMaxPlayerCount(info.getMaxPlayerCount())
                                 .build();
                     });
+
+            Path httpsConfig = Path.of("keystore.p12");
+            boolean https = Files.isRegularFile(httpsConfig);
+            if (https) {
+                signallingBuilder.setHttpsKeystore(httpsConfig.toFile(), server.getPropertyString("nethernet-keystore-password", ""));
+            }
 
             this.netherNetSignaling = signallingBuilder.build();
 
@@ -132,7 +122,7 @@ public class NetherNetInterface implements AdvancedSourceInterface {
 
             this.netherNetChannel = bootstrap.bind(new InetSocketAddress(address, server.getPort())).sync().channel();
 
-            server.getLogger().info("NetherNet signaling started on http://" + address + ":" + server.getPort() + " (WebRTC on port " + webrtcPort + "/udp)");
+            server.getLogger().info("NetherNet signaling started on " + (https ? "https://" : "http://") + address + ":" + server.getPort() + " (WebRTC on port " + webrtcPort + "/udp)");
         } catch (Exception e) {
             server.getLogger().error("Failed to start NetherNet", e);
         }
@@ -259,53 +249,5 @@ public class NetherNetInterface implements AdvancedSourceInterface {
             session.sendPacket(packet);
         }
         return null;
-    }
-
-    // Form previous version of the lib, to load our existing keystore.p12
-    private static OperatorIdentity fromKeystore(File keystore, String password) throws GeneralSecurityException, IOException, JoseException {
-        char[] pwd = password.toCharArray();
-
-        KeyStore ks = KeyStore.getInstance("PKCS12");
-        try (FileInputStream fis = new FileInputStream(keystore)) {
-            ks.load(fis, pwd);
-        }
-
-        // Find the first key in the keystore and extract the certificate
-        String alias = findKeyAlias(ks);
-        PrivateKey privateKey = (PrivateKey) ks.getKey(alias, pwd);
-        Certificate cert = ks.getCertificate(alias);
-        PublicKey publicKey = cert.getPublicKey();
-
-        // Extract the expiry and common name from the cert if they exist
-        Instant expiry = null;
-        String domain = "";
-        if (cert instanceof X509Certificate) {
-            X509Certificate x509 = (X509Certificate) cert;
-            expiry = x509.getNotAfter().toInstant();
-            domain = extractCommonName(x509.getSubjectX500Principal());
-        }
-
-        return new OperatorIdentity(privateKey, publicKey, expiry, domain);
-    }
-
-    private static String findKeyAlias(KeyStore keyStore) throws KeyStoreException {
-        for (String candidate : Collections.list(keyStore.aliases())) {
-            if (keyStore.isKeyEntry(candidate)) {
-                return candidate;
-            }
-        }
-        throw new KeyStoreException("No private key entry found in identity keystore");
-    }
-
-    private static String extractCommonName(X500Principal principal) {
-        try {
-            LdapName name = new LdapName(principal.getName());
-            for (Rdn rdn : name.getRdns()) {
-                if (rdn.getType().equalsIgnoreCase("CN")) {
-                    return rdn.getValue().toString();
-                }
-            }
-        } catch (InvalidNameException ignored) { }
-        return "";
     }
 }
